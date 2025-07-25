@@ -10,11 +10,15 @@ const hoursAgo = (hours: number) => {
     return date;
 }
 
-try {
+async function main() {
     // Deleting already existing data
+
+    console.log("Deleting previous records...\n")
+
     await prisma.incident.deleteMany()
     await prisma.camera.deleteMany()
 
+    console.log("Creating camera records...\n")
     await prisma.camera.createMany({
         data: [
             { id: 'cam1', name: "Cashier", location: "Entrance"},
@@ -22,8 +26,10 @@ try {
             { id: 'cam3', name: "Counter 2", location: "First Floor"}
         ],
     })
-
+    console.log("Finished creating camera records...\n")
     const cameras = await prisma.camera.findMany()
+
+    console.log("Creating incident records...\n")
 
     await prisma.incident.createMany({
         data: [
@@ -41,9 +47,13 @@ try {
             { cameraid: cameras[1].id, type: 'Gun Threat', tsStart: hoursAgo(1), tsEnd: hoursAgo(0.9), thumbnailUrl: '/images/thumb12.jpg' },
         ]
     })
-} catch (e) {
+    console.log("Finished creating incident records...\n")
+}
+
+main()
+.catch ((e) => {
     console.error(e)
     process.exit(1)
-} finally {
+}).finally(async () => {
     await prisma.$disconnect();
-}
+})
